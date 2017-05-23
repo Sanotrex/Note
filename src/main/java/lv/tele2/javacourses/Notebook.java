@@ -6,17 +6,26 @@ import asg.cliche.ShellDependent;
 import asg.cliche.ShellFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Notebook implements ShellDependent {
-    private final ArrayList<Record> records = new ArrayList<>();
+    private final Map<Integer, Record> records = new HashMap<>();
+    private final NavigableMap<String, Record> personsByName = new TreeMap<>();
     private Shell parentShell;
 
     @Command
-    public ArrayList<Record> list() {
-        return records;
+    public Record findPerson(String str) {
+        return personsByName.ceilingEntry(str).getValue();
+    }
+
+    @Command
+    public Collection<Record> list() {
+        return records.values();
+    }
+
+    @Command
+    public Collection<Record> listPersons() {
+        return personsByName.values();
     }
 
     @Command
@@ -25,7 +34,8 @@ public class Notebook implements ShellDependent {
         result.setFirstName(firstName);
         result.setLastName(lastName);
         result.setPhone(new ArrayList<>(Arrays.asList(phone)));
-        records.add(result);
+        records.put(result.getId(), result);
+        personsByName.put(firstName + " " + lastName, result);
         return result;
     }
 
@@ -33,7 +43,7 @@ public class Notebook implements ShellDependent {
     public Record createNote(String note) {
         Note result = new Note();
         result.setNote(note);
-        records.add(result);
+        records.put(result.getId(), result);
         return result;
     }
 
@@ -42,7 +52,7 @@ public class Notebook implements ShellDependent {
         Reminder result = new Reminder();
         result.setNote(note);
         result.setTime(time);
-        records.add(result);
+        records.put(result.getId(), result);
         return result;
     }
 
@@ -51,7 +61,7 @@ public class Notebook implements ShellDependent {
         Alarm result = new Alarm();
         result.setNote(note);
         result.setTime(time);
-        records.add(result);
+        records.put(result.getId(), result);
         return result;
     }
 
@@ -66,18 +76,13 @@ public class Notebook implements ShellDependent {
     }
 
     private Record find(int id) {
-        for (Record r : records) {
-            if (r.getId() == id) {
-                return r;
-            }
-        }
-        return null;
+        return records.get(id);
     }
 
     @Command
     public List<Record> find(String str) {
         ArrayList<Record> result = new ArrayList<>();
-        for (Record r : records) {
+        for (Record r : records.values()) {
             if (r.contains(str)) {
                 result.add(r);
             }
@@ -88,7 +93,7 @@ public class Notebook implements ShellDependent {
     @Command
     public List<Record> listExpired() {
         ArrayList<Record> result = new ArrayList<>();
-        for (Record r : records) {
+        for (Record r : records.values()) {
             if (r instanceof Expirable) {
                 Expirable e = (Expirable) r;
                 if (e.isExpired()) {
@@ -109,6 +114,7 @@ public class Notebook implements ShellDependent {
             System.out.println("this isn't an expirable");
         }
     }
+
 
     @Override
     public void cliSetShell(Shell theShell) {

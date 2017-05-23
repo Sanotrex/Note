@@ -1,6 +1,6 @@
 package lv.tele2.javacourses;
 
-public abstract class Record {
+public abstract class Record implements Comparable<Record> {
     private static int recordCount;
     private int id;
 
@@ -17,4 +17,21 @@ public abstract class Record {
         return String.valueOf(id).contains(str);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Record)) return false;
+        Record record = (Record) o;
+        return id == record.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id % 4;
+    }
+
+    @Override
+    public int compareTo(Record o) {
+        return o.id - this.id;
+    }
 }
