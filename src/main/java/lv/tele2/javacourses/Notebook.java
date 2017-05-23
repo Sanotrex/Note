@@ -7,6 +7,7 @@ import asg.cliche.ShellFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Notebook implements ShellDependent {
     private final Map<Integer, Record> records = new HashMap<>();
@@ -81,27 +82,17 @@ public class Notebook implements ShellDependent {
 
     @Command
     public List<Record> find(String str) {
-        ArrayList<Record> result = new ArrayList<>();
-        for (Record r : records.values()) {
-            if (r.contains(str)) {
-                result.add(r);
-            }
-        }
-        return result;
+        return records.values().stream()
+                .filter(r -> r.contains(str))
+                .collect(Collectors.toList());
     }
 
     @Command
     public List<Record> listExpired() {
-        ArrayList<Record> result = new ArrayList<>();
-        for (Record r : records.values()) {
-            if (r instanceof Expirable) {
-                Expirable e = (Expirable) r;
-                if (e.isExpired()) {
-                    result.add(r);
-                }
-            }
-        }
-        return result;
+        return records.values().stream()
+                .filter(r -> r instanceof Expirable)
+                .filter(r -> ((Expirable) r).isExpired())
+                .collect(Collectors.toList());
     }
 
     @Command
