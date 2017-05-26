@@ -1,10 +1,11 @@
 cr "this is a reminder" "18.05.2017 13:58"
-cr "this is a reminder" "19.05.2017 13:58"
+cr "this is another reminder" "19.05.2017 13:58"
 cn "this is a note"
-cp John Smith 111222333
-cp Mike Davidoff 333444 555599999 343434334
-cp Elizabeth Scott 4444677722 43434349999
-cp James Lewis 123456 123456
-cp Emile Correa 777777777 444444444 11111111
+cn "this is another note"
+cp John Smith john.smith@myfakeemail.com 111222333
+cp Mike Davidoff make@davidoff.site 333444 555599999 343434334
+cp Elizabeth Scott el@worldmail.com 4444677722 43434349999
+cp James Lewis james@inbox.box 123456 123456
+cp Emile Correa emile@emile.cor 777777777 444444444 11111111
 ca "This is morning alarm" "08:00"
-ca "This is morning alarm" "18:00"
+ca "This is evening alarm" "18:00"

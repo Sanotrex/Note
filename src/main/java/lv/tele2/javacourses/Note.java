@@ -2,8 +2,10 @@ package lv.tele2.javacourses;
 
 
 import asg.cliche.Command;
+import asg.cliche.Param;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Note extends Record {
     private String note;
@@ -21,11 +23,12 @@ public class Note extends Record {
         return note;
     }
 
-    @Command
-    public void setNote(String note) {
+    @Command(name = "note", abbrev = "n", description = "update note")
+    public void setNote(@Param(name = "note", description = "text of note") String note) {
         this.note = note;
     }
 
+    @Command(name = "show", abbrev = "s", description = "displays record")
     @Override
     public String toString() {
         return "Note{" +
@@ -46,16 +49,20 @@ public class Note extends Record {
 
     @Override
     public void insert() throws SQLException {
-        try (Connection con =
-                     DriverManager.getConnection("jdbc:derby:notebookdb");
-             PreparedStatement stmt = con.prepareStatement(
-                     "INSERT INTO RECORD (ID, REC_TYPE, NOTE) " +
-                             "VALUES (?, ?, ?)")) {
-            stmt.setInt(1, getId());
-            stmt.setString(2, "note");
-            stmt.setString(3, note);
+        DB.executePreparedUpdate("INSERT INTO RECORD (ID, REC_TYPE, NOTE) VALUES (?, ?, ?)",
+                stmt -> {
+                    stmt.setInt(1, getId());
+                    stmt.setString(2, "note");
+                    stmt.setString(3, note);
+                });
+    }
 
-            stmt.executeUpdate();
-        }
+    @Override
+    public void update() throws SQLException {
+        DB.executePreparedUpdate("UPDATE RECORD SET NOTE = ? WHERE ID = ?",
+                stmt -> {
+                    stmt.setString(1, note);
+                    stmt.setInt(2, getId());
+                });
     }
 }

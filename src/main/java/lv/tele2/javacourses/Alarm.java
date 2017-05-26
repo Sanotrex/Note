@@ -1,8 +1,12 @@
 package lv.tele2.javacourses;
 
 import asg.cliche.Command;
+import asg.cliche.Param;
 
-import java.sql.*;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -19,7 +23,7 @@ public class Alarm extends Note implements Expirable {
     public Alarm(ResultSet rs) throws SQLException {
         super(rs);
         time = rs.getTime("ALARM_TIME").toLocalTime();
-        Date dd = rs.getDate("ALARM_DISIMSSED_DATE");
+        Date dd = rs.getDate("ALARM_DISMISSED_DATE");
         if (dd != null) {
             dismissedDate = dd.toLocalDate();
         }
@@ -33,8 +37,8 @@ public class Alarm extends Note implements Expirable {
         this.time = time;
     }
 
-    @Command
-    public void setTime(String strTime) {
+    @Command(name = "time", abbrev = "t", description = "change time of alarm")
+    public void setTime(@Param(name = "time", description = "time in format HH:mm") String strTime) {
         this.time = LocalTime.parse(strTime, FORMAT);
     }
 
@@ -47,6 +51,7 @@ public class Alarm extends Note implements Expirable {
         return lt.contains(str);
     }
 
+    @Command(name = "show", abbrev = "s", description = "displays record")
     @Override
     public String toString() {
         return "Alarm{" +
@@ -66,6 +71,7 @@ public class Alarm extends Note implements Expirable {
         return time.isBefore(currentTime);
     }
 
+    @Command(name = "dismiss", abbrev = "d", description = "dismisses current alarm for today")
     @Override
     public void dismiss() {
         dismissedDate = LocalDate.now();
@@ -73,18 +79,24 @@ public class Alarm extends Note implements Expirable {
 
     @Override
     public void insert() throws SQLException {
-        try (Connection con =
-                     DriverManager.getConnection("jdbc:derby:notebookdb");
-             PreparedStatement stmt = con.prepareStatement(
-                     "INSERT INTO RECORD (ID, REC_TYPE, NOTE, ALARM_TIME) " +
-                             "VALUES (?, ?, ?, ?)")) {
-            stmt.setInt(1, getId());
-            stmt.setString(2, "alarm");
-            stmt.setString(3, getNote());
-            stmt.setTime(4, Time.valueOf(time));
+        DB.executePreparedUpdate("INSERT INTO RECORD (ID, REC_TYPE, NOTE, ALARM_TIME) VALUES (?, ?, ?, ?)",
+                stmt -> {
+                    stmt.setInt(1, getId());
+                    stmt.setString(2, "alarm");
+                    stmt.setString(3, getNote());
+                    stmt.setTime(4, Time.valueOf(time));
+                });
+    }
 
-            stmt.executeUpdate();
-        }
+    @Override
+    public void update() throws SQLException {
+        DB.executePreparedUpdate("UPDATE RECORD SET NOTE = ?, ALARM_TIME = ?, ALARM_DISMISSED_DATE = ? WHERE ID = ?",
+                stmt -> {
+                    stmt.setString(1, getNote());
+                    stmt.setTime(2, Time.valueOf(time));
+                    stmt.setDate(3, Date.valueOf(dismissedDate));
+                    stmt.setInt(4, getId());
+                });
     }
 
 }

@@ -44,13 +44,22 @@ public abstract class Record implements Comparable<Record> {
 
     public abstract void insert() throws SQLException;
 
+    public abstract void update() throws SQLException;
+
     @Override
     public int hashCode() {
-        return id % 4;
+        return id;
     }
 
     @Override
     public int compareTo(Record o) {
         return o.id - this.id;
+    }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "id=" + id +
+                '}';
     }
 }
