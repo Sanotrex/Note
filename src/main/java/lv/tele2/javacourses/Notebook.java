@@ -6,6 +6,7 @@ import asg.cliche.ShellDependent;
 import asg.cliche.ShellFactory;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,8 +21,37 @@ public class Notebook implements ShellDependent {
     }
 
     @Command
-    public Collection<Record> list() {
-        return records.values();
+    public Collection<Record> list() throws SQLException {
+        List<Record> result = new ArrayList<>();
+        try (Connection con =
+                     DriverManager.getConnection("jdbc:derby:notebookdb");
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM RECORD")) {
+
+            while (rs.next()) {
+                String recType = rs.getString("REC_TYPE");
+                Record rec = null;
+                switch (recType) {
+                    case "person":
+                        rec = new Person(rs);
+                        break;
+                    case "note":
+                        rec = new Note(rs);
+                        break;
+                    case "reminder":
+                        rec = new Reminder(rs);
+                        break;
+                    case "alarm":
+                        rec = new Alarm(rs);
+                        break;
+                    default:
+                        System.out.println(recType + " unsupported");
+                }
+                result.add(rec);
+            }
+
+        }
+        return result;
     }
 
     @Command
@@ -30,39 +60,43 @@ public class Notebook implements ShellDependent {
     }
 
     @Command
-    public Record createPerson(String firstName, String lastName, String... phone) {
+    public Record createPerson(String firstName, String lastName, String... phone) throws SQLException {
         Person result = new Person();
         result.setFirstName(firstName);
         result.setLastName(lastName);
         result.setPhone(new ArrayList<>(Arrays.asList(phone)));
         records.put(result.getId(), result);
         personsByName.put(firstName + " " + lastName, result);
+        result.insert();
         return result;
     }
 
     @Command
-    public Record createNote(String note) {
+    public Record createNote(String note) throws SQLException {
         Note result = new Note();
         result.setNote(note);
         records.put(result.getId(), result);
+        result.insert();
         return result;
     }
 
     @Command
-    public Record createReminder(String note, String time) {
+    public Record createReminder(String note, String time) throws SQLException {
         Reminder result = new Reminder();
         result.setNote(note);
         result.setTime(time);
         records.put(result.getId(), result);
+        result.insert();
         return result;
     }
 
     @Command
-    public Record createAlarm(String note, String time) {
+    public Record createAlarm(String note, String time) throws SQLException {
         Alarm result = new Alarm();
         result.setNote(note);
         result.setTime(time);
         records.put(result.getId(), result);
+        result.insert();
         return result;
     }
 

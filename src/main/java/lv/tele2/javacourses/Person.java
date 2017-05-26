@@ -2,12 +2,23 @@ package lv.tele2.javacourses;
 
 import asg.cliche.Command;
 
+import java.sql.*;
 import java.util.ArrayList;
 
 public class Person extends Record {
     private String firstName;
     private String lastName;
     private ArrayList<String> phone;
+
+    public Person() {
+
+    }
+
+    public Person(ResultSet rs) throws SQLException {
+        super(rs);
+        firstName = rs.getString("FIRST_NAME");
+        lastName = rs.getString("LAST_NAME");
+    }
 
     public String getFirstName() {
         return firstName;
@@ -45,6 +56,7 @@ public class Person extends Record {
                 '}';
     }
 
+
     @Override
     public boolean contains(String str) {
         if (super.contains(str)) {
@@ -67,4 +79,21 @@ public class Person extends Record {
         }
         return false;
     }
+
+    @Override
+    public void insert() throws SQLException {
+        try (Connection con =
+                     DriverManager.getConnection("jdbc:derby:notebookdb");
+             PreparedStatement stmt = con.prepareStatement(
+                     "INSERT INTO RECORD (ID, REC_TYPE, FIRST_NAME, LAST_NAME) " +
+                             "VALUES (?, ?, ?, ?)")) {
+            stmt.setInt(1, getId());
+            stmt.setString(2, "person");
+            stmt.setString(3, firstName);
+            stmt.setString(4, lastName);
+
+            stmt.executeUpdate();
+        }
+    }
+
 }

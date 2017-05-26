@@ -19,6 +19,11 @@
             <artifactId>cliche</artifactId>
             <version>110413</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.13.1.1</version>
+        </dependency>
     </dependencies>
 
 

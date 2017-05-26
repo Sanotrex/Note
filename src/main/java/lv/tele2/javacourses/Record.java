@@ -1,12 +1,29 @@
 package lv.tele2.javacourses;
 
+import java.sql.*;
+
 public abstract class Record implements Comparable<Record> {
-    private static int recordCount;
     private int id;
 
+    public Record(ResultSet rs) throws SQLException {
+        id = rs.getInt("ID");
+    }
+
     public Record() {
-        recordCount++;
-        id = recordCount;
+        try (Connection con =
+                     DriverManager.getConnection("jdbc:derby:notebookdb");
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT MAX(ID) FROM RECORD")) {
+
+            if (rs.next()) {
+                id = rs.getInt(1) + 1;
+            } else {
+                id = 1;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getId() {
@@ -24,6 +41,8 @@ public abstract class Record implements Comparable<Record> {
         Record record = (Record) o;
         return id == record.id;
     }
+
+    public abstract void insert() throws SQLException;
 
     @Override
     public int hashCode() {
